@@ -1,5 +1,5 @@
-from fastapi import FastAPI
-from model import User, Product
+from fastapi import FastAPI, HTTPException
+from .model import User, Product
 
 app = FastAPI()
 
@@ -16,52 +16,60 @@ def read_root():
 @app.get("/users")
 def read_users():
     # TODO: return all users from the database
-    pass
+    return list(db_users.values())
 
 
-@app.post("/user")
-def create_user():
-    # TODO: create a new user in the database
-    pass
+@app.post("/user", status_code=201)
+def create_user(payload: User):
+    db_users[payload.id] = payload
+    return payload
 
 
 @app.put("/user")
-def update_user():
-    # TODO: update an existing user in the database
-    pass
+def update_user(payload: User):
+    if payload.id not in db_users:
+        raise HTTPException(status_code=404, detail="User not found")
+    db_users[payload.id] = payload
+    return payload
 
 
 @app.get("/user")
 def get_all_users_prefix(prefix: str):
     # TODO: return all users from the database that match the given name prefix
-    pass
+    return [user for user in db_users.values() if user.name.startswith(prefix)]
 
 
 @app.delete("/user")
-def delete_user():
-    # TODO: delete an existing user from the database
-    pass
+def delete_user(id: int):
+    if id not in db_users:
+        raise HTTPException(status_code=404, detail="User not found")
+    del db_users[id]
+    return {"message": "User deleted"}
 
 
 @app.get("/products")
 def read_products():
     # TODO: return all products from the database
-    pass
+    return list(db_products.values())
 
 
-@app.post("/product")
-def create_product():
-    # TODO: create a new product in the database
-    pass
+@app.post("/product", status_code=201)
+def create_product(payload: Product):
+    db_products[payload.id] = payload
+    return payload
 
 
 @app.put("/product")
-def update_product():
-    # TODO: update an existing product in the database
-    pass
+def update_product(payload: Product):
+    if payload.id not in db_products:
+        raise HTTPException(status_code=404, detail="Product not found")
+    db_products[payload.id] = payload
+    return payload
 
 
 @app.delete("/product")
-def delete_product():
-    # TODO: delete an existing product from the database
-    pass
+def delete_product(id: int):
+    if id not in db_products:
+        raise HTTPException(status_code=404, detail="Product not found")
+    del db_products[id]
+    return {"message": "Product deleted"}
